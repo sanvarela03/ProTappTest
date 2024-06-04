@@ -11,14 +11,17 @@ import com.example.protapptest.data.remote.payload.request.AddressRequest
 import com.example.protapptest.data.remote.payload.request.UpdateAddressRequest
 import com.example.protapptest.data.remote.payload.response.MessageResponse
 import com.example.protapptest.domain.repository.AddressRepository
+import com.example.protapptest.security.TokenManager
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AddressRepositoryImpl @Inject constructor(
     val api: AddressApi,
-    val dao: ProducerDao
+    val dao: ProducerDao,
+    private val tokenManager: TokenManager
 ) : AddressRepository {
     override suspend fun addNewAddress(addressRequest: AddressRequest): Flow<ApiResponse<MessageResponse>> {
         return apiRequestFlow { api.addAddress(addressRequest) }
@@ -26,8 +29,13 @@ class AddressRepositoryImpl @Inject constructor(
 
     override suspend fun updateAddress(updateAddressRequest: UpdateAddressRequest): Flow<ApiResponse<MessageResponse>> {
         Log.d("AddressRepositoryImpl", "updateAddressRequest =$updateAddressRequest")
+        val userId = tokenManager.getUserId().first()
         return apiRequestFlow {
-            api.updateAddress(updateAddressRequest)
+            api.updateAddress(
+                userId = userId ?: -1L,
+                addressId = updateAddressRequest.id,
+                updateAddressRequest = updateAddressRequest
+            )
         }
     }
 
@@ -37,7 +45,7 @@ class AddressRepositoryImpl @Inject constructor(
         }
     }
 
-    override  fun getAddressById(id: Long): Flow<AddressEntity> {
+    override fun getAddressById(id: Long): Flow<AddressEntity> {
         return dao.getAddress(id)
     }
 

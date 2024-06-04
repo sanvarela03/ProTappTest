@@ -22,7 +22,7 @@ data class SettingsState(
         return UserInfoRequest(
             username = username,
             name = firstName,
-            lastname = lastName,
+            lastName = lastName,
             email = email,
             phone = phone,
         )

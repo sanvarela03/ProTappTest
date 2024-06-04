@@ -9,9 +9,12 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withTimeoutOrNull
 import retrofit2.Response
 
-fun <T> apiRequestFlow(call: suspend () -> Response<T>): Flow<ApiResponse<T>> = flow {
+fun <T> apiRequestFlow(
+    timeOut: Long = 60000L,
+    call: suspend () -> Response<T>
+): Flow<ApiResponse<T & Any>> = flow {
     emit(ApiResponse.Loading)
-    withTimeoutOrNull(60000L) {
+    withTimeoutOrNull(timeOut) {
         val response = call()
         try {
             if (response.isSuccessful) {

@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.daggerHiltAndroid)
     alias(libs.plugins.googleServices)
-
 }
 
 android {

@@ -70,9 +70,10 @@ class RepositoryModule {
     @Singleton
     fun provideAddressRepository(
         api: AddressApi,
-        producerDao: ProducerDao
+        producerDao: ProducerDao,
+        tokenManager: TokenManager
     ): AddressRepository {
-        return AddressRepositoryImpl(api, producerDao)
+        return AddressRepositoryImpl(api, producerDao, tokenManager)
     }
 
     @Provides

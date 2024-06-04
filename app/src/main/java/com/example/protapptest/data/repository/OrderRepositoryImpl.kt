@@ -94,32 +94,29 @@ class OrderRepositoryImpl @Inject constructor(
     override suspend fun acceptOrder(orderId: Long): Flow<ApiResponse<MessageResponse>> = flow {
         emit(ApiResponse.Loading)
         val order = orderDao.getOrder(orderId)
-
-        val remote = try {
-            val response = producerApi.confirmOrder(
-                userId = order.producerId,
-                orderId = orderId,
-                accepted = true
-            )
-            if (response.isSuccessful) {
-                response.body()
-            } else {
-                null
+        val remoteTest =
+            apiRequestFlow(timeOut = 300000L) {
+                producerApi.confirmOrder(
+                    order.producerId,
+                    orderId,
+                    true
+                )
             }
 
-        } catch (e: IOException) {
-            e.printStackTrace()
-            emit(ApiResponse.Failure("No se pudo cargar los datos", 400))
-            null
-        } catch (e: HttpException) {
-            e.printStackTrace()
-            emit(ApiResponse.Failure("No se pudo cargar los datos", 400))
-            null
+        remoteTest.collect {
+            when (it) {
+                ApiResponse.Loading -> {}
+                ApiResponse.Waiting -> {}
+                is ApiResponse.Failure -> {
+                    emit(it)
+                }
+
+                is ApiResponse.Success -> {
+                    emit(it)
+                }
+            }
         }
 
-        remote?.let {
-            emit(ApiResponse.Success(it))
-        }
     }
 
     private suspend fun FlowCollector<ApiResponse<List<OrderAndStatus>>>.getRemote(
